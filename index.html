@@ -16,10 +16,8 @@
             color: var(--text);
             display: flex;
             justify-content: center;
-            /* モバイルで上部に余白を確保しつつ、PCでも見やすく */
             padding-top: 10vh; 
             margin: 0;
-            /* モバイルでのタップ時の青いハイライトを消す */
             -webkit-tap-highlight-color: transparent;
         }
         .container {
@@ -43,7 +41,6 @@
             font-size: 1.2rem;
             outline: none;
             transition: border-color 0.3s;
-            /* iOSでのデフォルトの丸みを消す */
             border-radius: 0;
             appearance: none;
         }
@@ -63,10 +60,8 @@
             display: flex;
             align-items: center;
             animation: fadeIn 0.3s ease;
-            /* 長いテキストがはみ出さないように */
             word-break: break-all;
         }
-        /* PCでのホバー効果 */
         @media (hover: hover) {
             li:hover {
                 background: #fff;
@@ -79,7 +74,6 @@
                 color: var(--accent);
             }
         }
-        /* モバイルでのアクティブ（タップ）状態の視覚フィードバック */
         li:active {
             background: #f0f0f0;
         }
@@ -95,42 +89,54 @@
 <div class="container">
     <h1>Swift.</h1>
     <input type="text" id="todoInput" placeholder="次は何をする？" autofocus>
-    <ul id="todoList">
-    </ul>
+    <ul id="todoList"></ul>
 </div>
 
 <script>
     const input = document.getElementById('todoInput');
     const list = document.getElementById('todoList');
 
+    // 1. 起動時にLocalStorageからデータを読み込む
+    window.addEventListener('load', () => {
+        const savedTodos = JSON.parse(localStorage.getItem('swiftTodos')) || [];
+        // 保存されていたデータを逆順（新しい順に表示するため）で描画
+        savedTodos.reverse().forEach(todoText => {
+            renderTodo(todoText);
+        });
+    });
+
     input.addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && this.value.trim() !== "") {
-            addTodo(this.value);
+            const text = this.value.trim();
+            renderTodo(text);
+            saveTodos(); // 保存
             this.value = "";
-            // モバイルでキーボードを自動で閉じたい場合は以下を有効に（今回は連続入力を優先）
-            // this.blur(); 
         }
     });
 
-    function addTodo(text) {
+    // 画面にリストを描画する関数
+    function renderTodo(text) {
         const li = document.createElement('li');
         li.textContent = text;
         
-        // クリックで確認後に消去
         li.addEventListener('click', function() {
-            // 確認ダイアログを表示
-            const confirmDelete = confirm(`「${text}」のタスクを完了しますか？`);
-            
-            if (confirmDelete) {
+            if (confirm(`「${text}」を完了として削除しますか？`)) {
                 this.style.opacity = "0";
                 this.style.transform = "translateX(20px)";
                 setTimeout(() => {
                     this.remove();
+                    saveTodos(); // 削除後も状態を保存
                 }, 200);
             }
         });
 
         list.prepend(li); 
+    }
+
+    // 現在のリストの状態をLocalStorageに保存する関数
+    function saveTodos() {
+        const items = Array.from(list.querySelectorAll('li')).map(li => li.textContent);
+        localStorage.setItem('swiftTodos', JSON.stringify(items));
     }
 </script>
 
