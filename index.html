@@ -235,7 +235,9 @@
       cursor: pointer;
       word-break: break-all;
     }
-    .todo-text:hover { color: var(--muted); text-decoration: line-through; }
+    @media (hover: hover) {
+  .todo-text:hover { color: var(--muted); text-decoration: line-through; }
+}
 
     /* ── PICK CARD ── */
     .pick-card {
