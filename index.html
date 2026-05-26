@@ -447,19 +447,14 @@
   <div id="pane-watch" style="display:none;">
 
     <!-- Random pick -->
-    <div class="pick-card">
-      <div class="pick-label">今日見る作品</div>
-      <div class="pick-result" id="pickResult" onclick="copyPick()" title="クリックでコピー">
-        <span id="pickText" style="color:var(--muted);font-size:15px;font-weight:400;">ボタンを押してランダム選択</span>
-        <span class="copy-hint"><i class="ti ti-copy" style="font-size:14px;"></i> コピー</span>
-      </div>
-      <div class="pick-meta" id="pickMeta"></div>
-      <div class="pick-actions">
-        <button class="btn primary" onclick="shufflePick()">
-          <i class="ti ti-refresh" id="shuffleIcon"></i> ランダムで選ぶ
-        </button>
-      </div>
-    </div>
+<div style="display:flex; align-items:center; gap:10px; margin-bottom:1.25rem;">
+  <button class="btn primary" style="flex-shrink:0;" onclick="shufflePick()">
+    <i class="ti ti-refresh" id="shuffleIcon"></i> ランダムで選ぶ
+  </button>
+  <span id="pickText" onclick="copyPick()" title="クリックでコピー"
+    style="font-size:15px; cursor:pointer; word-break:break-all; color:var(--muted);">
+  </span>
+</div>
 
     <!-- Add single -->
     <div class="section-header">
@@ -557,11 +552,12 @@
   }
 
   function completeTodo(i) {
+    if (!confirm(`「${todos[i]}」を完了として削除しますか？`)) return;
     const t = todos.splice(i, 1)[0];
     saveTodos();
     renderTodos();
     toast('✓ 完了：' + t);
-  }
+}
 
   function deleteTodo(i) {
     todos.splice(i, 1);
@@ -621,11 +617,12 @@
   }
 
   function deleteWatch(i) {
+    if (!confirm(`「${watches[i]}」を削除しますか？`)) return;
     if (lastPick === watches[i]) { lastPick = null; resetPick(); }
     watches.splice(i, 1);
     saveWatches();
     renderWatches();
-  }
+}
 
   function clearAllWatches() {
     if (!confirm('視聴リストをすべて削除しますか？')) return;
