@@ -272,7 +272,7 @@
   // ============================================================
   //  ★★★ ここにデプロイした GAS の URL を貼り付けてください ★★★
   // ============================================================
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyFhCXxvD0_SMVB2mZjcXAjtBWdnWJ57zsh6X3jmdLEhUNHcYJ81gHa1hm9wSaOpR0/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyicQlaqDzqxNrBmh3S6zQe5e_Oa8Uw9ekYNNnLhBF9qfxXqY4qOk9DipXhaWtqd-6G/exec';
   // ============================================================
 
   /* ── 状態 ───────────────────────────────────────────────── */
@@ -299,35 +299,50 @@
     }
   }
 
-  /* ── API ヘルパー ────────────────────────────────────────── */
+  /* ── API ヘルパー（JSONP版・CORS回避） ──────────────────── */
+  // fetch は GAS の CORS ポリシーでブロックされるため
+  // <script> タグ動的挿入の JSONP で通信する。
 
-  /** GET リクエスト */
-  async function gasGet(params) {
-    const url = new URL(GAS_URL);
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    showLoading();
-    try {
-      const res = await fetch(url.toString(), { redirect: 'follow' });
-      return await res.json();
-    } finally {
-      hideLoading();
-    }
-  }
+  let _cbIndex = 0;
 
-  /** POST リクエスト */
-  async function gasPost(body) {
-    showLoading();
-    try {
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        redirect: 'follow',
+  function gasCall(params) {
+    return new Promise((resolve, reject) => {
+      const cbName = '__gasCb' + (++_cbIndex);
+      const timer  = setTimeout(() => {
+        delete window[cbName];
+        hideLoading();
+        reject(new Error('timeout'));
+      }, 15000);
+
+      window[cbName] = (data) => {
+        clearTimeout(timer);
+        delete window[cbName];
+        hideLoading();
+        resolve(data);
+      };
+
+      const url = new URL(GAS_URL);
+      url.searchParams.set('callback', cbName);
+      Object.entries(params).forEach(([k, v]) => {
+        url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
       });
-      return await res.json();
-    } finally {
-      hideLoading();
-    }
+
+      const s = document.createElement('script');
+      s.src = url.toString();
+      s.onerror = () => {
+        clearTimeout(timer);
+        delete window[cbName];
+        hideLoading();
+        reject(new Error('script load error'));
+      };
+      showLoading();
+      document.head.appendChild(s);
+      setTimeout(() => s.remove(), 20000);
+    });
   }
+
+  const gasGet  = (params) => gasCall(params);
+  const gasPost = (body)   => gasCall(body);
 
   /* ── TAB ─────────────────────────────────────────────────── */
   function switchTab(tab) {
