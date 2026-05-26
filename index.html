@@ -1,143 +1,713 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SwiftDone - Minimal Todo</title>
-    <style>
-        :root {
-            --bg: #f9f9f9;
-            --text: #333;
-            --accent: #007AFF;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            padding-top: 10vh; 
-            margin: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-        }
-        h1 {
-            font-weight: 200;
-            font-size: 3rem;
-            margin-bottom: 20px;
-            text-align: center;
-            letter-spacing: -1px;
-        }
-        input {
-            width: 100%;
-            border: none;
-            border-bottom: 2px solid #ddd;
-            background: transparent;
-            padding: 10px 0;
-            font-size: 1.2rem;
-            outline: none;
-            transition: border-color 0.3s;
-            border-radius: 0;
-            appearance: none;
-        }
-        input:focus {
-            border-color: var(--accent);
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-            margin-top: 30px;
-        }
-        li {
-            padding: 15px 10px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            animation: fadeIn 0.3s ease;
-            word-break: break-all;
-        }
-        @media (hover: hover) {
-            li:hover {
-                background: #fff;
-                padding-left: 15px;
-                color: #999;
-            }
-            li:hover::before {
-                content: "✓";
-                margin-right: 10px;
-                color: var(--accent);
-            }
-        }
-        li:active {
-            background: #f0f0f0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SwiftDone</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    :root {
+      --accent: #5B6AF5;
+      --accent-soft: rgba(91,106,245,0.1);
+      --danger: #E24B4A;
+      --success: #1D9E75;
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --surface: #ececec;
+      --border: rgba(0,0,0,0.1);
+      --text: #1c1c1e;
+      --muted: #8e8e93;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1e;
+        --card: #2c2c2e;
+        --surface: #3a3a3c;
+        --border: rgba(255,255,255,0.1);
+        --text: #f2f2f7;
+        --muted: #8e8e93;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 5rem;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 200;
+      letter-spacing: -1px;
+      color: var(--text);
+    }
+    .header h1 span {
+      color: var(--accent);
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border-radius: 11px;
+      padding: 4px;
+      margin-bottom: 1.5rem;
+    }
+    .tab {
+      flex: 1;
+      padding: 9px 0;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    .tab.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* ── INPUT ROW ── */
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+    .input-row input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--card);
+      color: var(--text);
+      padding: 0 14px;
+      font-size: 15px;
+      height: 44px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+      -webkit-appearance: none;
+    }
+    .input-row input:focus {
+      border-color: var(--accent);
+    }
+    .input-row input::placeholder {
+      color: var(--muted);
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--card);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.15s;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:hover { background: var(--surface); }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn.primary:hover { background: #4857e0; }
+
+    .btn.sm {
+      height: 36px;
+      padding: 0 12px;
+      font-size: 13px;
+    }
+
+    /* ── ICON BUTTON ── */
+    .icon-btn {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 18px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: all 0.15s;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .icon-btn:hover { background: var(--surface); }
+    .icon-btn.del:hover { color: var(--danger); }
+    .icon-btn.copy:hover { color: var(--accent); }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: 17px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-weight: 600;
+    }
+
+    /* ── TODO LIST ── */
+    .todo-list { display: flex; flex-direction: column; gap: 6px; }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 13px 14px;
+      animation: fadeUp 0.2s ease;
+    }
+    .todo-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid var(--muted);
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .todo-circle:hover {
+      border-color: var(--success);
+      background: rgba(29,158,117,0.1);
+    }
+    .todo-text {
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.4;
+      cursor: pointer;
+      word-break: break-all;
+    }
+    .todo-text:hover { color: var(--muted); text-decoration: line-through; }
+
+    /* ── PICK CARD ── */
+    .pick-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .pick-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .pick-result {
+      font-size: 22px;
+      font-weight: 600;
+      min-height: 34px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      word-break: break-all;
+      line-height: 1.3;
+    }
+    .pick-result .copy-hint {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+    .pick-result:hover .copy-hint { opacity: 1; }
+    .pick-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      min-height: 18px;
+    }
+    .pick-actions { display: flex; gap: 8px; margin-top: 1rem; }
+
+    /* ── BULK ── */
+    .bulk-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+      animation: fadeUp 0.2s ease;
+    }
+    .bulk-wrap textarea {
+      width: 100%;
+      min-height: 120px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      resize: vertical;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .bulk-wrap textarea:focus { border-color: var(--accent); }
+    .bulk-wrap textarea::placeholder { color: var(--muted); }
+    .bulk-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .bulk-row { display: flex; gap: 8px; margin-top: 10px; }
+
+    /* ── WATCH LIST ── */
+    .watch-list { display: flex; flex-direction: column; gap: 6px; }
+    .watch-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 11px 14px;
+      animation: fadeUp 0.2s ease;
+    }
+    .watch-num {
+      font-size: 12px;
+      color: var(--muted);
+      width: 22px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+    .watch-title {
+      flex: 1;
+      font-size: 15px;
+      word-break: break-all;
+    }
+    .watch-actions { display: flex; gap: 2px; }
+
+    /* ── EMPTY ── */
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 2.5rem 0;
+    }
+    .empty i {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(28,28,30,0.9);
+      color: #fff;
+      border-radius: 20px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+      backdrop-filter: blur(8px);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── DELETE ALL ── */
+    .danger-zone {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+    }
+    .btn.ghost-danger {
+      background: transparent;
+      border-color: var(--danger);
+      color: var(--danger);
+      font-size: 13px;
+      height: 36px;
+    }
+    .btn.ghost-danger:hover { background: rgba(226,75,74,0.08); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinning { animation: spin 0.4s linear; }
+
+    /* ── SCROLLBAR (webkit) ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Swift.</h1>
-    <input type="text" id="todoInput" placeholder="次は何をする？" autofocus>
-    <ul id="todoList"></ul>
-</div>
+<div class="app">
+
+  <div class="header">
+    <h1>Swift<span>.</span></h1>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('todo')" id="tab-todo">
+      <i class="ti ti-check"></i> タスク
+    </button>
+    <button class="tab" onclick="switchTab('watch')" id="tab-watch">
+      <i class="ti ti-movie"></i> 視聴リスト
+    </button>
+  </div>
+
+  <!-- ═══ TODO PANE ═══ -->
+  <div id="pane-todo">
+    <div class="input-row">
+      <input type="text" id="todoInput" placeholder="次は何をする？" onkeydown="handleTodoKey(event)" autofocus>
+      <button class="btn primary" onclick="addTodo()"><i class="ti ti-plus"></i> 追加</button>
+    </div>
+    <div class="todo-list" id="todoList"></div>
+    <div class="danger-zone" id="todoDangerZone" style="display:none;">
+      <button class="btn ghost-danger" onclick="clearAllTodos()"><i class="ti ti-trash"></i> すべて削除</button>
+    </div>
+  </div>
+
+  <!-- ═══ WATCH PANE ═══ -->
+  <div id="pane-watch" style="display:none;">
+
+    <!-- Random pick -->
+    <div class="pick-card">
+      <div class="pick-label">今日見る作品</div>
+      <div class="pick-result" id="pickResult" onclick="copyPick()" title="クリックでコピー">
+        <span id="pickText" style="color:var(--muted);font-size:15px;font-weight:400;">ボタンを押してランダム選択</span>
+        <span class="copy-hint"><i class="ti ti-copy" style="font-size:14px;"></i> コピー</span>
+      </div>
+      <div class="pick-meta" id="pickMeta"></div>
+      <div class="pick-actions">
+        <button class="btn primary" onclick="shufflePick()">
+          <i class="ti ti-refresh" id="shuffleIcon"></i> ランダムで選ぶ
+        </button>
+      </div>
+    </div>
+
+    <!-- Add single -->
+    <div class="section-header">
+      <span class="section-title">
+        登録作品 <span class="badge" id="watchCount">0</span>
+      </span>
+      <button class="btn sm" onclick="toggleBulk()"><i class="ti ti-list-details"></i> 一括登録</button>
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="watchInput" placeholder="作品タイトルを入力…" onkeydown="handleWatchKey(event)">
+      <button class="btn primary" onclick="addWatch()"><i class="ti ti-plus"></i> 追加</button>
+    </div>
+
+    <!-- Bulk input -->
+    <div class="bulk-wrap" id="bulkWrap" style="display:none;">
+      <textarea id="bulkInput" placeholder="1行に1タイトルで入力&#10;例：&#10;ダンケルク&#10;君の名は&#10;インターステラー"></textarea>
+      <div class="bulk-hint"><i class="ti ti-info-circle"></i> 1行に1作品、まとめて登録できます</div>
+      <div class="bulk-row">
+        <button class="btn primary sm" onclick="addBulk()"><i class="ti ti-file-import"></i> 一括登録</button>
+        <button class="btn sm" onclick="toggleBulk()">キャンセル</button>
+      </div>
+    </div>
+
+    <!-- Watch list -->
+    <div class="watch-list" id="watchList"></div>
+
+    <div class="danger-zone" id="watchDangerZone" style="display:none;">
+      <button class="btn ghost-danger" onclick="clearAllWatches()"><i class="ti ti-trash"></i> すべて削除</button>
+    </div>
+
+  </div><!-- /pane-watch -->
+
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
 
 <script>
-    const input = document.getElementById('todoInput');
+  /* ═══ STATE ═══ */
+  let todos   = JSON.parse(localStorage.getItem('swiftTodos3')   || '[]');
+  let watches = JSON.parse(localStorage.getItem('swiftWatches2') || '[]');
+  let lastPick = null;
+  let bulkOpen = false;
+
+  /* ═══ TAB ═══ */
+  function switchTab(tab) {
+    ['todo', 'watch'].forEach(t => {
+      document.getElementById('pane-' + t).style.display = t === tab ? '' : 'none';
+      document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    });
+  }
+
+  /* ═══ TOAST ═══ */
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  /* ═══ TODO ═══ */
+  function renderTodos() {
     const list = document.getElementById('todoList');
-
-    // 1. 起動時にLocalStorageからデータを読み込む
-    window.addEventListener('load', () => {
-        const savedTodos = JSON.parse(localStorage.getItem('swiftTodos')) || [];
-        // 保存されていたデータを逆順（新しい順に表示するため）で描画
-        savedTodos.reverse().forEach(todoText => {
-            renderTodo(todoText);
-        });
-    });
-
-    input.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && this.value.trim() !== "") {
-            const text = this.value.trim();
-            renderTodo(text);
-            saveTodos(); // 保存
-            this.value = "";
-        }
-    });
-
-    // 画面にリストを描画する関数
-    function renderTodo(text) {
-        const li = document.createElement('li');
-        li.textContent = text;
-        
-        li.addEventListener('click', function() {
-            if (confirm(`「${text}」を完了として削除しますか？`)) {
-                this.style.opacity = "0";
-                this.style.transform = "translateX(20px)";
-                setTimeout(() => {
-                    this.remove();
-                    saveTodos(); // 削除後も状態を保存
-                }, 200);
-            }
-        });
-
-        list.prepend(li); 
+    const dz   = document.getElementById('todoDangerZone');
+    dz.style.display = todos.length ? '' : 'none';
+    if (!todos.length) {
+      list.innerHTML = '<div class="empty"><i class="ti ti-clipboard"></i>タスクはまだありません</div>';
+      return;
     }
+    list.innerHTML = '';
+    todos.forEach((text, i) => {
+      const div = document.createElement('div');
+      div.className = 'todo-item';
+      div.innerHTML = `
+        <div class="todo-circle" onclick="completeTodo(${i})" title="完了"></div>
+        <span class="todo-text" onclick="completeTodo(${i})">${escHtml(text)}</span>
+        <button class="icon-btn del" onclick="deleteTodo(${i})" aria-label="削除"><i class="ti ti-x"></i></button>`;
+      list.appendChild(div);
+    });
+  }
 
-    // 現在のリストの状態をLocalStorageに保存する関数
-    function saveTodos() {
-        const items = Array.from(list.querySelectorAll('li')).map(li => li.textContent);
-        localStorage.setItem('swiftTodos', JSON.stringify(items));
+  function handleTodoKey(e) { if (e.key === 'Enter') addTodo(); }
+
+  function addTodo() {
+    const inp = document.getElementById('todoInput');
+    const v = inp.value.trim();
+    if (!v) return;
+    todos.unshift(v);
+    saveTodos();
+    renderTodos();
+    inp.value = '';
+    inp.focus();
+  }
+
+  function completeTodo(i) {
+    const t = todos.splice(i, 1)[0];
+    saveTodos();
+    renderTodos();
+    toast('✓ 完了：' + t);
+  }
+
+  function deleteTodo(i) {
+    todos.splice(i, 1);
+    saveTodos();
+    renderTodos();
+  }
+
+  function clearAllTodos() {
+    if (!confirm('タスクをすべて削除しますか？')) return;
+    todos = [];
+    saveTodos();
+    renderTodos();
+    toast('タスクをすべて削除しました');
+  }
+
+  function saveTodos() {
+    localStorage.setItem('swiftTodos3', JSON.stringify(todos));
+  }
+
+  /* ═══ WATCH ═══ */
+  function renderWatches() {
+    const list = document.getElementById('watchList');
+    const dz   = document.getElementById('watchDangerZone');
+    document.getElementById('watchCount').textContent = watches.length;
+    dz.style.display = watches.length ? '' : 'none';
+    if (!watches.length) {
+      list.innerHTML = '<div class="empty"><i class="ti ti-movie"></i>作品を登録してください</div>';
+      return;
     }
+    list.innerHTML = '';
+    watches.forEach((title, i) => {
+      const div = document.createElement('div');
+      div.className = 'watch-item';
+      div.innerHTML = `
+        <span class="watch-num">${i + 1}</span>
+        <span class="watch-title">${escHtml(title)}</span>
+        <div class="watch-actions">
+          <button class="icon-btn copy" onclick="copyTitle(${i})" title="コピー" aria-label="コピー"><i class="ti ti-copy"></i></button>
+          <button class="icon-btn del" onclick="deleteWatch(${i})" title="削除" aria-label="削除"><i class="ti ti-trash"></i></button>
+        </div>`;
+      list.appendChild(div);
+    });
+  }
+
+  function handleWatchKey(e) { if (e.key === 'Enter') addWatch(); }
+
+  function addWatch() {
+    const inp = document.getElementById('watchInput');
+    const v = inp.value.trim();
+    if (!v) return;
+    if (watches.includes(v)) { toast('すでに登録済みです'); return; }
+    watches.push(v);
+    saveWatches();
+    renderWatches();
+    inp.value = '';
+    inp.focus();
+  }
+
+  function deleteWatch(i) {
+    if (lastPick === watches[i]) { lastPick = null; resetPick(); }
+    watches.splice(i, 1);
+    saveWatches();
+    renderWatches();
+  }
+
+  function clearAllWatches() {
+    if (!confirm('視聴リストをすべて削除しますか？')) return;
+    watches = [];
+    lastPick = null;
+    resetPick();
+    saveWatches();
+    renderWatches();
+    toast('視聴リストをすべて削除しました');
+  }
+
+  function toggleBulk() {
+    bulkOpen = !bulkOpen;
+    document.getElementById('bulkWrap').style.display = bulkOpen ? '' : 'none';
+    if (bulkOpen) setTimeout(() => document.getElementById('bulkInput').focus(), 50);
+  }
+
+  function addBulk() {
+    const raw = document.getElementById('bulkInput').value;
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    let added = 0;
+    lines.forEach(l => { if (!watches.includes(l)) { watches.push(l); added++; } });
+    saveWatches();
+    renderWatches();
+    document.getElementById('bulkInput').value = '';
+    toggleBulk();
+    toast(added + '件 登録しました');
+  }
+
+  function saveWatches() {
+    localStorage.setItem('swiftWatches2', JSON.stringify(watches));
+  }
+
+  /* ═══ SHUFFLE ═══ */
+  function shufflePick() {
+    if (!watches.length) { toast('先に作品を登録してください'); return; }
+    const icon = document.getElementById('shuffleIcon');
+    icon.classList.add('spinning');
+    setTimeout(() => icon.classList.remove('spinning'), 400);
+    let pick;
+    if (watches.length > 1) {
+      do { pick = watches[Math.floor(Math.random() * watches.length)]; }
+      while (pick === lastPick);
+    } else {
+      pick = watches[0];
+    }
+    lastPick = pick;
+    const el = document.getElementById('pickText');
+    el.style.color = 'var(--text)';
+    el.style.fontSize = '22px';
+    el.style.fontWeight = '600';
+    el.textContent = pick;
+    document.getElementById('pickMeta').textContent = watches.length + ' 作品の中から選択';
+  }
+
+  function resetPick() {
+    const el = document.getElementById('pickText');
+    el.style.color = 'var(--muted)';
+    el.style.fontSize = '15px';
+    el.style.fontWeight = '400';
+    el.textContent = 'ボタンを押してランダム選択';
+    document.getElementById('pickMeta').textContent = '';
+  }
+
+  function copyPick() {
+    if (!lastPick) return;
+    navigator.clipboard.writeText(lastPick).then(() => toast('コピーしました：' + lastPick));
+  }
+
+  function copyTitle(i) {
+    const title = watches[i];
+    navigator.clipboard.writeText(title).then(() => toast('コピーしました：' + title));
+  }
+
+  /* ═══ UTILS ═══ */
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ═══ INIT ═══ */
+  renderTodos();
+  renderWatches();
 </script>
 
 </body>
