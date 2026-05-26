@@ -214,7 +214,7 @@
   <!-- ═══ TODO PANE ═══ -->
   <div id="pane-todo">
     <div class="input-row">
-      <input type="text" id="todoInput" placeholder="次は何をする？" onkeydown="handleTodoKey(event)" autofocus>
+      <input type="text" id="todoInput" placeholder="What's next?" onkeydown="handleTodoKey(event)" autofocus>
       <button class="btn primary" id="btnAddTodo" onclick="addTodo()"><i class="ti ti-plus"></i> 追加</button>
     </div>
     <div class="todo-list" id="todoList"></div>
@@ -243,7 +243,7 @@
     </div>
 
     <div class="input-row">
-      <input type="text" id="watchInput" placeholder="作品タイトルを入力…" onkeydown="handleWatchKey(event)">
+      <input type="text" id="watchInput" placeholder="タイトルを入力…" onkeydown="handleWatchKey(event)">
       <button class="btn primary" id="btnAddWatch" onclick="addWatch()"><i class="ti ti-plus"></i> 追加</button>
     </div>
 
@@ -401,7 +401,7 @@
       if (idx !== -1) todos[idx] = data.row;
     } else {
       todos = todos.filter(t => t.id !== tmpId);
-      toast('⚠ 追加に失敗しました');
+      toast('⚠ Failed to add.');
     }
     renderTodos();
     inp.focus();
