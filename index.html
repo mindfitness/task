@@ -226,23 +226,29 @@
   <!-- ═══ WATCH PANE ═══ -->
   <div id="pane-watch" style="display:none;">
 
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.25rem;">
-      <button class="btn primary" style="flex-shrink:0;" onclick="shufflePick()">
-        <i class="ti ti-refresh" id="shuffleIcon"></i> ランダムで選ぶ
-      </button>
-      <span id="pickText" onclick="copyPick()" title="クリックでコピー"
-        style="font-size:15px; cursor:pointer; word-break:break-all; color:var(--muted);">
-      </span>
-    </div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.25rem; flex-wrap:wrap;">
+  <button class="btn primary" style="flex-shrink:0;" onclick="shufflePick()">
+    <i class="ti ti-refresh" id="shuffleIcon"></i> ランダムで選ぶ
+  </button>
+  <span id="pickText" style="font-size:22px; font-weight:600; word-break:break-all; color:var(--muted); flex:1;"></span>
+  <button class="icon-btn copy" id="btnCopyPick" onclick="copyPick()" title="コピー"
+    aria-label="コピー" style="display:none; flex-shrink:0;">
+    <i class="ti ti-copy"></i>
+  </button>
+</div>
 
     <div class="section-header">
-      <span class="section-title">
-        登録作品 <span class="badge" id="watchCount">0</span>
-      </span>
-      <button class="btn sm" onclick="toggleBulk()"><i class="ti ti-list-details"></i> 一括登録</button>
-    </div>
+  <span class="section-title">
+    登録作品 <span class="badge" id="watchCount">0</span>
+  </span>
+  <button class="btn sm" onclick="toggleBulk()"><i class="ti ti-list-details"></i> 一括登録</button>
+</div>
 
-    <div class="input-row">
+<div class="input-row" style="margin-bottom:0.5rem;">
+  <input type="text" id="watchSearch" placeholder="🔍 リストを検索…" oninput="renderWatches()">
+</div>
+
+<div class="input-row">
       <input type="text" id="watchInput" placeholder="タイトルを入力…" onkeydown="handleWatchKey(event)">
       <button class="btn primary" id="btnAddWatch" onclick="addWatch()"><i class="ti ti-plus"></i> 追加</button>
     </div>
@@ -436,28 +442,36 @@
 
   /* ── WATCH レンダー ──────────────────────────────────────── */
   function renderWatches() {
-    const list = document.getElementById('watchList');
-    const dz   = document.getElementById('watchDangerZone');
-    document.getElementById('watchCount').textContent = watches.length;
-    dz.style.display = watches.length ? '' : 'none';
-    if (!watches.length) {
-      list.innerHTML = '<div class="empty"><i class="ti ti-movie"></i>作品を登録してください</div>';
-      return;
-    }
-    list.innerHTML = '';
-    watches.forEach((item, i) => {
-      const div = document.createElement('div');
-      div.className = 'watch-item';
-      div.innerHTML = `
-        <span class="watch-num">${i + 1}</span>
-        <span class="watch-title">${escHtml(item.text)}</span>
-        <div class="watch-actions">
-          <button class="icon-btn copy" onclick="copyTitle('${item.id}')" title="コピー" aria-label="コピー"><i class="ti ti-copy"></i></button>
-          <button class="icon-btn del" onclick="deleteWatch('${item.id}')" title="削除" aria-label="削除"><i class="ti ti-trash"></i></button>
-        </div>`;
-      list.appendChild(div);
-    });
+  const list  = document.getElementById('watchList');
+  const dz    = document.getElementById('watchDangerZone');
+  const query = (document.getElementById('watchSearch')?.value || '').trim().toLowerCase();
+  const filtered = query
+    ? watches.filter(w => w.text.toLowerCase().includes(query))
+    : watches;
+  document.getElementById('watchCount').textContent = watches.length;
+  dz.style.display = watches.length ? '' : 'none';
+  if (!watches.length) {
+    list.innerHTML = '<div class="empty"><i class="ti ti-movie"></i>作品を登録してください</div>';
+    return;
   }
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><i class="ti ti-search"></i>該当する作品がありません</div>';
+    return;
+  }
+  list.innerHTML = '';
+  filtered.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'watch-item';
+    div.innerHTML = `
+      <span class="watch-num">${i + 1}</span>
+      <span class="watch-title">${escHtml(item.text)}</span>
+      <div class="watch-actions">
+        <button class="icon-btn copy" onclick="copyTitle('${item.id}')" title="コピー" aria-label="コピー"><i class="ti ti-copy"></i></button>
+        <button class="icon-btn del" onclick="deleteWatch('${item.id}')" title="削除" aria-label="削除"><i class="ti ti-trash"></i></button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
 
   function handleWatchKey(e) { if (e.key === 'Enter') addWatch(); }
 
@@ -534,32 +548,34 @@
 
   /* ── SHUFFLE ─────────────────────────────────────────────── */
   function shufflePick() {
-    if (!watches.length) { toast('先に作品を登録してください'); return; }
-    const icon = document.getElementById('shuffleIcon');
-    icon.classList.add('spinning');
-    setTimeout(() => icon.classList.remove('spinning'), 400);
-    let pick;
-    if (watches.length > 1) {
-      do { pick = watches[Math.floor(Math.random() * watches.length)].text; }
-      while (pick === lastPick);
-    } else {
-      pick = watches[0].text;
-    }
-    lastPick = pick;
-    const el = document.getElementById('pickText');
-    el.style.color      = 'var(--text)';
-    el.style.fontSize   = '22px';
-    el.style.fontWeight = '600';
-    el.textContent      = pick;
+  if (!watches.length) { toast('先に作品を登録してください'); return; }
+  const icon = document.getElementById('shuffleIcon');
+  icon.classList.add('spinning');
+  setTimeout(() => icon.classList.remove('spinning'), 400);
+  let pick;
+  if (watches.length > 1) {
+    do { pick = watches[Math.floor(Math.random() * watches.length)].text; }
+    while (pick === lastPick);
+  } else {
+    pick = watches[0].text;
   }
+  lastPick = pick;
+  const el = document.getElementById('pickText');
+  el.style.color      = 'var(--text)';
+  el.style.fontSize   = '22px';
+  el.style.fontWeight = '600';
+  el.textContent      = pick;
+  document.getElementById('btnCopyPick').style.display = '';
+}
 
-  function resetPick() {
-    const el = document.getElementById('pickText');
-    el.style.color      = 'var(--muted)';
-    el.style.fontSize   = '15px';
-    el.style.fontWeight = '400';
-    el.textContent      = '';
-  }
+function resetPick() {
+  const el = document.getElementById('pickText');
+  el.style.color      = 'var(--muted)';
+  el.style.fontSize   = '15px';
+  el.style.fontWeight = '400';
+  el.textContent      = '';
+  document.getElementById('btnCopyPick').style.display = 'none';
+}
 
   function copyPick() {
     if (!lastPick) return;
