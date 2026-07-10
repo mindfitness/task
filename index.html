@@ -11,6 +11,8 @@
     :root {
       --accent: #5B6AF5;
       --accent-soft: rgba(91,106,245,0.1);
+      --accent2: #F5A623;
+      --accent2-soft: rgba(245,166,35,0.1);
       --danger: #E24B4A;
       --success: #1D9E75;
       --bg: #f5f5f7;
@@ -53,11 +55,11 @@
       border-radius: 11px; padding: 4px; margin-bottom: 1.5rem;
     }
     .tab {
-      flex: 1; padding: 9px 0; font-size: 14px; font-weight: 500;
+      flex: 1; padding: 9px 0; font-size: 13px; font-weight: 500;
       border: none; border-radius: 8px; cursor: pointer;
       background: transparent; color: var(--muted); transition: all 0.2s;
       display: flex; align-items: center; justify-content: center;
-      gap: 6px; font-family: inherit;
+      gap: 5px; font-family: inherit;
     }
     .tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
@@ -83,6 +85,8 @@
     .btn:hover { background: var(--surface); }
     .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
     .btn.primary:hover { background: #4857e0; }
+    .btn.primary2 { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+    .btn.primary2:hover { background: #e09410; }
     .btn.sm { height: 36px; padding: 0 12px; font-size: 13px; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
@@ -104,7 +108,12 @@
       font-size: 12px; background: var(--accent-soft); color: var(--accent);
       border-radius: 20px; padding: 2px 8px; font-weight: 600;
     }
+    .badge2 {
+      font-size: 12px; background: var(--accent2-soft); color: var(--accent2);
+      border-radius: 20px; padding: 2px 8px; font-weight: 600;
+    }
 
+    /* ── TODO / BUCKET items ── */
     .todo-list { display: flex; flex-direction: column; gap: 6px; }
     .todo-item {
       display: flex; align-items: center; gap: 10px; background: var(--card);
@@ -117,9 +126,27 @@
       display: flex; align-items: center; justify-content: center;
     }
     .todo-circle:hover { border-color: var(--success); background: rgba(29,158,117,0.1); }
+    .bucket-circle {
+      width: 20px; height: 20px; border-radius: 4px; border: 1.5px solid var(--muted);
+      flex-shrink: 0; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bucket-circle:hover { border-color: var(--accent2); background: rgba(245,166,35,0.15); }
     .todo-text { flex: 1; font-size: 15px; line-height: 1.4; cursor: pointer; word-break: break-all; }
     @media (hover: hover) { .todo-text:hover { color: var(--muted); text-decoration: line-through; } }
 
+    /* ── WATCH ── */
+    .watch-list { display: flex; flex-direction: column; gap: 6px; }
+    .watch-item {
+      display: flex; align-items: center; gap: 10px; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 11px 14px; animation: fadeUp 0.2s ease;
+    }
+    .watch-num { font-size: 12px; color: var(--muted); width: 22px; flex-shrink: 0; text-align: right; }
+    .watch-title { flex: 1; font-size: 15px; word-break: break-all; }
+    .watch-actions { display: flex; gap: 2px; }
+
+    /* ── BULK ── */
     .bulk-wrap {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;
@@ -136,20 +163,10 @@
     .bulk-hint { font-size: 12px; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
     .bulk-row { display: flex; gap: 8px; margin-top: 10px; }
 
-    .watch-list { display: flex; flex-direction: column; gap: 6px; }
-    .watch-item {
-      display: flex; align-items: center; gap: 10px; background: var(--card);
-      border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 11px 14px; animation: fadeUp 0.2s ease;
-    }
-    .watch-num { font-size: 12px; color: var(--muted); width: 22px; flex-shrink: 0; text-align: right; }
-    .watch-title { flex: 1; font-size: 15px; word-break: break-all; }
-    .watch-actions { display: flex; gap: 2px; }
-
     .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 2.5rem 0; }
     .empty i { font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.5; }
 
-    /* Loading overlay */
+    /* ── Loading ── */
     .loading-bar {
       position: fixed; top: 0; left: 0; right: 0; height: 2px;
       background: var(--accent); transform: scaleX(0); transform-origin: left;
@@ -193,7 +210,6 @@
 </head>
 <body>
 
-<!-- ローディングバー -->
 <div class="loading-bar" id="loadingBar"></div>
 
 <div class="app">
@@ -209,17 +225,20 @@
     <button class="tab" onclick="switchTab('watch')" id="tab-watch">
       <i class="ti ti-movie"></i> WATCH
     </button>
+    <button class="tab" onclick="switchTab('bucket')" id="tab-bucket">
+      <i class="ti ti-bucket"></i> BUCKET
+    </button>
   </div>
 
   <!-- ═══ TODO PANE ═══ -->
   <div id="pane-todo">
     <div class="input-row">
-      <input type="text" id="todoInput" placeholder="What's next?" onkeydown="handleTodoKey(event)" autofocus>
-      <button class="btn primary" id="btnAddTodo" onclick="addTodo()"><i class="ti ti-plus"></i> 追加</button>
+      <input type="text" id="todoInput" placeholder="What's next?" onkeydown="handleKey(event,'todo')" autofocus>
+      <button class="btn primary" onclick="addTodo()"><i class="ti ti-plus"></i> 追加</button>
     </div>
     <div class="todo-list" id="todoList"></div>
     <div class="danger-zone" id="todoDangerZone" style="display:none;">
-      <button class="btn ghost-danger" onclick="clearAllTodos()"><i class="ti ti-trash"></i> すべて削除</button>
+      <button class="btn ghost-danger" onclick="clearAll('todos')"><i class="ti ti-trash"></i> すべて削除</button>
     </div>
   </div>
 
@@ -227,67 +246,96 @@
   <div id="pane-watch" style="display:none;">
 
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.25rem; flex-wrap:wrap;">
-  <button class="btn primary" style="flex-shrink:0;" onclick="shufflePick()">
-    <i class="ti ti-refresh" id="shuffleIcon"></i> ランダムで選ぶ
-  </button>
-  <span id="pickText" style="font-size:22px; font-weight:600; word-break:break-all; color:var(--muted); flex:1;"></span>
-  <button class="icon-btn copy" id="btnCopyPick" onclick="copyPick()" title="コピー"
-    aria-label="コピー" style="display:none; flex-shrink:0;">
-    <i class="ti ti-copy"></i>
-  </button>
-</div>
-
-    <div class="section-header">
-  <span class="section-title">
-    登録作品 <span class="badge" id="watchCount">0</span>
-  </span>
-  <button class="btn sm" onclick="toggleBulk()"><i class="ti ti-list-details"></i> 一括登録</button>
-</div>
-
-<div class="input-row" style="margin-bottom:0.5rem;">
-  <input type="text" id="watchSearch" placeholder="🔍 リストを検索…" oninput="renderWatches()">
-</div>
-
-<div class="input-row">
-      <input type="text" id="watchInput" placeholder="タイトルを入力…" onkeydown="handleWatchKey(event)">
-      <button class="btn primary" id="btnAddWatch" onclick="addWatch()"><i class="ti ti-plus"></i> 追加</button>
+      <button class="btn primary" style="flex-shrink:0;" onclick="shufflePick()">
+        <i class="ti ti-refresh" id="shuffleIcon"></i> ランダムで選ぶ
+      </button>
+      <span id="pickText" style="font-size:22px; font-weight:600; word-break:break-all; color:var(--muted); flex:1;"></span>
+      <button class="icon-btn copy" id="btnCopyPick" onclick="copyPick()" title="コピー"
+        aria-label="コピー" style="display:none; flex-shrink:0;">
+        <i class="ti ti-copy"></i>
+      </button>
     </div>
 
-    <div class="bulk-wrap" id="bulkWrap" style="display:none;">
-      <textarea id="bulkInput" placeholder="1行に1タイトルで入力&#10;例：&#10;ダンケルク&#10;君の名は&#10;インターステラー"></textarea>
+    <div class="section-header">
+      <span class="section-title">
+        登録作品 <span class="badge" id="watchCount">0</span>
+      </span>
+      <button class="btn sm" onclick="toggleBulk('watch')"><i class="ti ti-list-details"></i> 一括登録</button>
+    </div>
+
+    <div class="input-row" style="margin-bottom:0.5rem;">
+      <input type="text" id="watchSearch" placeholder="🔍 リストを検索…" oninput="renderWatches()">
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="watchInput" placeholder="タイトルを入力…" onkeydown="handleKey(event,'watch')">
+      <button class="btn primary" onclick="addWatch()"><i class="ti ti-plus"></i> 追加</button>
+    </div>
+
+    <div class="bulk-wrap" id="bulkWrap-watch" style="display:none;">
+      <textarea id="bulkInput-watch" placeholder="1行に1タイトルで入力&#10;例：&#10;ダンケルク&#10;君の名は&#10;インターステラー"></textarea>
       <div class="bulk-hint"><i class="ti ti-info-circle"></i> 1行に1作品、まとめて登録できます</div>
       <div class="bulk-row">
-        <button class="btn primary sm" onclick="addBulk()"><i class="ti ti-file-import"></i> 一括登録</button>
-        <button class="btn sm" onclick="toggleBulk()">キャンセル</button>
+        <button class="btn primary sm" onclick="addBulk('watch')"><i class="ti ti-file-import"></i> 一括登録</button>
+        <button class="btn sm" onclick="toggleBulk('watch')">キャンセル</button>
       </div>
     </div>
 
     <div class="watch-list" id="watchList"></div>
 
     <div class="danger-zone" id="watchDangerZone" style="display:none;">
-      <button class="btn ghost-danger" onclick="clearAllWatches()"><i class="ti ti-trash"></i> すべて削除</button>
+      <button class="btn ghost-danger" onclick="clearAll('watches')"><i class="ti ti-trash"></i> すべて削除</button>
     </div>
 
+  </div>
+
+  <!-- ═══ BUCKET PANE ═══ -->
+  <div id="pane-bucket" style="display:none;">
+    <div class="input-row">
+      <input type="text" id="bucketInput" placeholder="やりたいことを入力…" onkeydown="handleKey(event,'bucket')">
+      <button class="btn primary2" onclick="addBucket()"><i class="ti ti-plus"></i> 追加</button>
+    </div>
+
+    <div class="section-header" style="margin-top:0.25rem;">
+      <span class="section-title">
+        BucketList <span class="badge2" id="bucketCount">0</span>
+      </span>
+    </div>
+
+    <div class="todo-list" id="bucketList"></div>
+    <div class="danger-zone" id="bucketDangerZone" style="display:none;">
+      <button class="btn ghost-danger" onclick="clearAll('buckets')"><i class="ti ti-trash"></i> すべて削除</button>
+    </div>
   </div>
 
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script>
-  // ============================================================
-  //  ★★★ ここにデプロイした GAS の URL を貼り付けてください ★★★
-  // ============================================================
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyicQlaqDzqxNrBmh3S6zQe5e_Oa8Uw9ekYNNnLhBF9qfxXqY4qOk9DipXhaWtqd-6G/exec';
-  // ============================================================
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import {
+    getDatabase, ref, push, remove, onValue, set, get
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-  /* ── 状態 ───────────────────────────────────────────────── */
-  let todos    = [];   // [{ id, text }, ...]
-  let watches  = [];   // [{ id, text }, ...]
+  /* ══════════════════════════════════════════
+     Firebase 設定
+  ══════════════════════════════════════════ */
+  const firebaseConfig = {
+    databaseURL: 'https://privatedb-53988-default-rtdb.asia-southeast1.firebasedatabase.app/'
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  /* ── 状態 ──────────────────────────────── */
+  let todos   = [];
+  let watches = [];
+  let buckets = [];
   let lastPick = null;
-  let bulkOpen = false;
+  let bulkOpen = { watch: false };
 
-  /* ── ローディングバー ────────────────────────────────────── */
+  /* ── ローディングバー ────────────────────── */
   let loadingCount = 0;
   function showLoading() {
     loadingCount++;
@@ -305,70 +353,41 @@
     }
   }
 
-  /* ── API ヘルパー（JSONP版・CORS回避） ──────────────────── */
-  // fetch は GAS の CORS ポリシーでブロックされるため
-  // <script> タグ動的挿入の JSONP で通信する。
-
-  let _cbIndex = 0;
-
-  function gasCall(params) {
-    return new Promise((resolve, reject) => {
-      const cbName = '__gasCb' + (++_cbIndex);
-      const timer  = setTimeout(() => {
-        delete window[cbName];
-        hideLoading();
-        reject(new Error('timeout'));
-      }, 15000);
-
-      window[cbName] = (data) => {
-        clearTimeout(timer);
-        delete window[cbName];
-        hideLoading();
-        resolve(data);
-      };
-
-      const url = new URL(GAS_URL);
-      url.searchParams.set('callback', cbName);
-      Object.entries(params).forEach(([k, v]) => {
-        url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
-      });
-
-      const s = document.createElement('script');
-      s.src = url.toString();
-      s.onerror = () => {
-        clearTimeout(timer);
-        delete window[cbName];
-        hideLoading();
-        reject(new Error('script load error'));
-      };
-      showLoading();
-      document.head.appendChild(s);
-      setTimeout(() => s.remove(), 20000);
-    });
-  }
-
-  const gasGet  = (params) => gasCall(params);
-  const gasPost = (body)   => gasCall(body);
-
-  /* ── TAB ─────────────────────────────────────────────────── */
-  function switchTab(tab) {
-    ['todo', 'watch'].forEach(t => {
+  /* ── TAB ────────────────────────────────── */
+  window.switchTab = function(tab) {
+    ['todo', 'watch', 'bucket'].forEach(t => {
       document.getElementById('pane-' + t).style.display = t === tab ? '' : 'none';
       document.getElementById('tab-' + t).classList.toggle('active', t === tab);
     });
-  }
+  };
 
-  /* ── TOAST ───────────────────────────────────────────────── */
+  /* ── TOAST ──────────────────────────────── */
   let toastTimer;
-  function toast(msg) {
+  window.toast = function(msg) {
     const el = document.getElementById('toast');
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
-  }
+  };
 
-  /* ── TODO レンダー ───────────────────────────────────────── */
+  /* ── UTILS ──────────────────────────────── */
+  window.escHtml = function(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  };
+
+  window.handleKey = function(e, type) {
+    if (e.key !== 'Enter') return;
+    if (type === 'todo')   addTodo();
+    if (type === 'watch')  addWatch();
+    if (type === 'bucket') addBucket();
+  };
+
+  /* ════════════════════════════════════════
+     TODO
+  ════════════════════════════════════════ */
   function renderTodos() {
     const list = document.getElementById('todoList');
     const dz   = document.getElementById('todoDangerZone');
@@ -389,226 +408,257 @@
     });
   }
 
-  function handleTodoKey(e) { if (e.key === 'Enter') addTodo(); }
-
-  async function addTodo() {
+  window.addTodo = async function() {
     const inp = document.getElementById('todoInput');
     const v   = inp.value.trim();
     if (!v) return;
     inp.value = '';
-    // 楽観的 UI
-    const tmpId = 'tmp_' + Date.now();
-    todos.unshift({ id: tmpId, text: v });
-    renderTodos();
-    // API
-    const data = await gasPost({ sheet: 'todos', action: 'add', text: v });
-    if (data.ok) {
-      const idx = todos.findIndex(t => t.id === tmpId);
-      if (idx !== -1) todos[idx] = data.row;
-    } else {
-      todos = todos.filter(t => t.id !== tmpId);
-      toast('⚠ Failed to add.');
-    }
-    renderTodos();
-    inp.focus();
-  }
+    showLoading();
+    try {
+      await push(ref(db, 'todos'), { text: v, createdAt: Date.now() });
+      toast('✓ 追加しました');
+    } catch(e) { toast('⚠ 追加に失敗しました'); }
+    finally    { hideLoading(); inp.focus(); }
+  };
 
-  async function completeTodo(id) {
+  window.completeTodo = async function(id) {
     const item = todos.find(t => t.id === id);
     if (!item) return;
     if (!confirm(`「${item.text}」を完了として削除しますか？`)) return;
-    todos = todos.filter(t => t.id !== id);
-    renderTodos();
-    const data = await gasPost({ sheet: 'todos', action: 'delete', id });
-    if (!data.ok) toast('⚠ 削除に失敗しました（リロードしてください）');
-    else toast('✓ 完了：' + item.text);
-  }
+    showLoading();
+    try {
+      await remove(ref(db, 'todos/' + id));
+      toast('✓ 完了：' + item.text);
+    } catch(e) { toast('⚠ 削除に失敗しました'); }
+    finally    { hideLoading(); }
+  };
 
-  async function deleteTodo(id) {
-    const item = todos.find(t => t.id === id);
-    if (!item) return;
-    todos = todos.filter(t => t.id !== id);
-    renderTodos();
-    await gasPost({ sheet: 'todos', action: 'delete', id });
-  }
+  window.deleteTodo = async function(id) {
+    showLoading();
+    try { await remove(ref(db, 'todos/' + id)); }
+    catch(e) { toast('⚠ 削除に失敗しました'); }
+    finally  { hideLoading(); }
+  };
 
-  async function clearAllTodos() {
-    if (!confirm('タスクをすべて削除しますか？')) return;
-    todos = [];
-    renderTodos();
-    await gasPost({ sheet: 'todos', action: 'clear' });
-    toast('タスクをすべて削除しました');
-  }
-
-  /* ── WATCH レンダー ──────────────────────────────────────── */
+  /* ════════════════════════════════════════
+     WATCH
+  ════════════════════════════════════════ */
   function renderWatches() {
-  const list  = document.getElementById('watchList');
-  const dz    = document.getElementById('watchDangerZone');
-  const query = (document.getElementById('watchSearch')?.value || '').trim().toLowerCase();
-  const filtered = query
-    ? watches.filter(w => w.text.toLowerCase().includes(query))
-    : watches;
-  document.getElementById('watchCount').textContent = watches.length;
-  dz.style.display = watches.length ? '' : 'none';
-  if (!watches.length) {
-    list.innerHTML = '<div class="empty"><i class="ti ti-movie"></i>作品を登録してください</div>';
-    return;
+    const list  = document.getElementById('watchList');
+    const dz    = document.getElementById('watchDangerZone');
+    const query = (document.getElementById('watchSearch')?.value || '').trim().toLowerCase();
+    const filtered = query ? watches.filter(w => w.text.toLowerCase().includes(query)) : watches;
+    document.getElementById('watchCount').textContent = watches.length;
+    dz.style.display = watches.length ? '' : 'none';
+    if (!watches.length) {
+      list.innerHTML = '<div class="empty"><i class="ti ti-movie"></i>作品を登録してください</div>';
+      return;
+    }
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty"><i class="ti ti-search"></i>該当する作品がありません</div>';
+      return;
+    }
+    list.innerHTML = '';
+    filtered.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'watch-item';
+      div.innerHTML = `
+        <span class="watch-num">${i + 1}</span>
+        <span class="watch-title">${escHtml(item.text)}</span>
+        <div class="watch-actions">
+          <button class="icon-btn copy" onclick="copyTitle('${item.id}')" title="コピー" aria-label="コピー"><i class="ti ti-copy"></i></button>
+          <button class="icon-btn del" onclick="deleteWatch('${item.id}')" title="削除" aria-label="削除"><i class="ti ti-trash"></i></button>
+        </div>`;
+      list.appendChild(div);
+    });
   }
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty"><i class="ti ti-search"></i>該当する作品がありません</div>';
-    return;
-  }
-  list.innerHTML = '';
-  filtered.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'watch-item';
-    div.innerHTML = `
-      <span class="watch-num">${i + 1}</span>
-      <span class="watch-title">${escHtml(item.text)}</span>
-      <div class="watch-actions">
-        <button class="icon-btn copy" onclick="copyTitle('${item.id}')" title="コピー" aria-label="コピー"><i class="ti ti-copy"></i></button>
-        <button class="icon-btn del" onclick="deleteWatch('${item.id}')" title="削除" aria-label="削除"><i class="ti ti-trash"></i></button>
-      </div>`;
-    list.appendChild(div);
-  });
-}
 
-  function handleWatchKey(e) { if (e.key === 'Enter') addWatch(); }
-
-  async function addWatch() {
+  window.addWatch = async function() {
     const inp = document.getElementById('watchInput');
     const v   = inp.value.trim();
     if (!v) return;
     if (watches.some(w => w.text === v)) { toast('すでに登録済みです'); return; }
     inp.value = '';
-    const tmpId = 'tmp_' + Date.now();
-    watches.push({ id: tmpId, text: v });
-    renderWatches();
-    const data = await gasPost({ sheet: 'watches', action: 'add', title: v });
-    if (data.ok) {
-      const idx = watches.findIndex(w => w.id === tmpId);
-      if (idx !== -1) watches[idx] = data.row;
-    } else {
-      watches = watches.filter(w => w.id !== tmpId);
-      toast('⚠ 追加に失敗しました');
-    }
-    renderWatches();
-    inp.focus();
-  }
+    showLoading();
+    try {
+      await push(ref(db, 'watches'), { text: v, createdAt: Date.now() });
+      toast('✓ 追加しました');
+    } catch(e) { toast('⚠ 追加に失敗しました'); }
+    finally    { hideLoading(); inp.focus(); }
+  };
 
-  async function deleteWatch(id) {
+  window.deleteWatch = async function(id) {
     const item = watches.find(w => w.id === id);
     if (!item) return;
     if (!confirm(`「${item.text}」を削除しますか？`)) return;
     if (lastPick === item.text) { lastPick = null; resetPick(); }
-    watches = watches.filter(w => w.id !== id);
-    renderWatches();
-    await gasPost({ sheet: 'watches', action: 'delete', id });
-  }
+    showLoading();
+    try { await remove(ref(db, 'watches/' + id)); }
+    catch(e) { toast('⚠ 削除に失敗しました'); }
+    finally  { hideLoading(); }
+  };
 
-  async function clearAllWatches() {
-    if (!confirm('視聴リストをすべて削除しますか？')) return;
-    watches = [];
-    lastPick = null;
-    resetPick();
-    renderWatches();
-    await gasPost({ sheet: 'watches', action: 'clear' });
-    toast('視聴リストをすべて削除しました');
-  }
+  window.toggleBulk = function(type) {
+    bulkOpen[type] = !bulkOpen[type];
+    document.getElementById('bulkWrap-' + type).style.display = bulkOpen[type] ? '' : 'none';
+    if (bulkOpen[type]) setTimeout(() => document.getElementById('bulkInput-' + type).focus(), 50);
+  };
 
-  function toggleBulk() {
-    bulkOpen = !bulkOpen;
-    document.getElementById('bulkWrap').style.display = bulkOpen ? '' : 'none';
-    if (bulkOpen) setTimeout(() => document.getElementById('bulkInput').focus(), 50);
-  }
-
-  async function addBulk() {
-    const raw   = document.getElementById('bulkInput').value;
+  window.addBulk = async function(type) {
+    const raw   = document.getElementById('bulkInput-' + type).value;
     const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    const newOnes = lines.filter(l => !watches.some(w => w.text === l));
-    if (!newOnes.length) { toast('新しい作品がありません'); return; }
-    document.getElementById('bulkInput').value = '';
-    toggleBulk();
-    const tmpItems = newOnes.map(t => ({ id: 'tmp_' + Math.random(), text: t }));
-    watches.push(...tmpItems);
-    renderWatches();
-    const data = await gasPost({ sheet: 'watches', action: 'bulk', titles: newOnes });
-    if (data.ok) {
-      tmpItems.forEach((tmp, i) => {
-        const idx = watches.findIndex(w => w.id === tmp.id);
-        if (idx !== -1 && data.rows[i]) watches[idx] = data.rows[i];
-      });
+    const pool  = type === 'watch' ? watches : buckets;
+    const newOnes = lines.filter(l => !pool.some(w => w.text === l));
+    if (!newOnes.length) { toast('新しいアイテムがありません'); return; }
+    document.getElementById('bulkInput-' + type).value = '';
+    toggleBulk(type);
+    showLoading();
+    try {
+      const targetRef = ref(db, type === 'watch' ? 'watches' : 'buckets');
+      await Promise.all(newOnes.map(t => push(targetRef, { text: t, createdAt: Date.now() })));
       toast(newOnes.length + '件 登録しました');
-    } else {
-      watches = watches.filter(w => !tmpItems.some(t => t.id === w.id));
-      toast('⚠ 一括登録に失敗しました');
-    }
-    renderWatches();
+    } catch(e) { toast('⚠ 一括登録に失敗しました'); }
+    finally    { hideLoading(); }
+  };
+
+  /* ── SHUFFLE ──────────────────────────── */
+  window.shufflePick = function() {
+    if (!watches.length) { toast('先に作品を登録してください'); return; }
+    const icon = document.getElementById('shuffleIcon');
+    icon.classList.add('spinning');
+    setTimeout(() => icon.classList.remove('spinning'), 400);
+    let pick;
+    if (watches.length > 1) {
+      do { pick = watches[Math.floor(Math.random() * watches.length)].text; }
+      while (pick === lastPick);
+    } else { pick = watches[0].text; }
+    lastPick = pick;
+    const el = document.getElementById('pickText');
+    el.style.color = 'var(--text)'; el.style.fontSize = '22px'; el.style.fontWeight = '600';
+    el.textContent = pick;
+    document.getElementById('btnCopyPick').style.display = '';
+  };
+
+  function resetPick() {
+    const el = document.getElementById('pickText');
+    el.style.color = 'var(--muted)'; el.style.fontSize = '15px'; el.style.fontWeight = '400';
+    el.textContent = '';
+    document.getElementById('btnCopyPick').style.display = 'none';
   }
 
-  /* ── SHUFFLE ─────────────────────────────────────────────── */
-  function shufflePick() {
-  if (!watches.length) { toast('先に作品を登録してください'); return; }
-  const icon = document.getElementById('shuffleIcon');
-  icon.classList.add('spinning');
-  setTimeout(() => icon.classList.remove('spinning'), 400);
-  let pick;
-  if (watches.length > 1) {
-    do { pick = watches[Math.floor(Math.random() * watches.length)].text; }
-    while (pick === lastPick);
-  } else {
-    pick = watches[0].text;
-  }
-  lastPick = pick;
-  const el = document.getElementById('pickText');
-  el.style.color      = 'var(--text)';
-  el.style.fontSize   = '22px';
-  el.style.fontWeight = '600';
-  el.textContent      = pick;
-  document.getElementById('btnCopyPick').style.display = '';
-}
-
-function resetPick() {
-  const el = document.getElementById('pickText');
-  el.style.color      = 'var(--muted)';
-  el.style.fontSize   = '15px';
-  el.style.fontWeight = '400';
-  el.textContent      = '';
-  document.getElementById('btnCopyPick').style.display = 'none';
-}
-
-  function copyPick() {
+  window.copyPick = function() {
     if (!lastPick) return;
     navigator.clipboard.writeText(lastPick).then(() => toast('コピーしました：' + lastPick));
-  }
+  };
 
-  function copyTitle(id) {
+  window.copyTitle = function(id) {
     const item = watches.find(w => w.id === id);
     if (!item) return;
     navigator.clipboard.writeText(item.text).then(() => toast('コピーしました：' + item.text));
+  };
+
+  /* ════════════════════════════════════════
+     BUCKET LIST
+  ════════════════════════════════════════ */
+  function renderBuckets() {
+    const list = document.getElementById('bucketList');
+    const dz   = document.getElementById('bucketDangerZone');
+    document.getElementById('bucketCount').textContent = buckets.length;
+    dz.style.display = buckets.length ? '' : 'none';
+    if (!buckets.length) {
+      list.innerHTML = '<div class="empty"><i class="ti ti-bucket"></i>やりたいことを追加しよう！</div>';
+      return;
+    }
+    list.innerHTML = '';
+    buckets.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'todo-item';
+      div.innerHTML = `
+        <div class="bucket-circle" onclick="completeBucket('${item.id}')" title="達成！"></div>
+        <span class="todo-text" onclick="completeBucket('${item.id}')">${escHtml(item.text)}</span>
+        <button class="icon-btn del" onclick="deleteBucket('${item.id}')" aria-label="削除"><i class="ti ti-x"></i></button>`;
+      list.appendChild(div);
+    });
   }
 
-  /* ── UTILS ───────────────────────────────────────────────── */
-  function escHtml(s) {
-    return String(s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  window.addBucket = async function() {
+    const inp = document.getElementById('bucketInput');
+    const v   = inp.value.trim();
+    if (!v) return;
+    inp.value = '';
+    showLoading();
+    try {
+      await push(ref(db, 'buckets'), { text: v, createdAt: Date.now() });
+      toast('✓ 追加しました');
+    } catch(e) { toast('⚠ 追加に失敗しました'); }
+    finally    { hideLoading(); inp.focus(); }
+  };
+
+  window.completeBucket = async function(id) {
+    const item = buckets.find(b => b.id === id);
+    if (!item) return;
+    if (!confirm(`「${item.text}」を達成として削除しますか？🎉`)) return;
+    showLoading();
+    try {
+      await remove(ref(db, 'buckets/' + id));
+      toast('🎉 達成おめでとう！：' + item.text);
+    } catch(e) { toast('⚠ 削除に失敗しました'); }
+    finally    { hideLoading(); }
+  };
+
+  window.deleteBucket = async function(id) {
+    showLoading();
+    try { await remove(ref(db, 'buckets/' + id)); }
+    catch(e) { toast('⚠ 削除に失敗しました'); }
+    finally  { hideLoading(); }
+  };
+
+  /* ════════════════════════════════════════
+     CLEAR ALL
+  ════════════════════════════════════════ */
+  window.clearAll = async function(collection) {
+    const labels = { todos: 'タスク', watches: '視聴リスト', buckets: 'BucketList' };
+    if (!confirm(`${labels[collection]}をすべて削除しますか？`)) return;
+    showLoading();
+    try {
+      await set(ref(db, collection), null);
+      toast(`${labels[collection]}をすべて削除しました`);
+      if (collection === 'watches') { lastPick = null; resetPick(); }
+    } catch(e) { toast('⚠ 削除に失敗しました'); }
+    finally    { hideLoading(); }
+  };
+
+  /* ════════════════════════════════════════
+     リアルタイム購読
+  ════════════════════════════════════════ */
+  function fbToArray(snapshot) {
+    if (!snapshot.exists()) return [];
+    const val = snapshot.val();
+    return Object.entries(val)
+      .map(([id, v]) => ({ id, text: v.text, createdAt: v.createdAt || 0 }))
+      .sort((a, b) => b.createdAt - a.createdAt);
   }
 
-  /* ── 初期ロード ──────────────────────────────────────────── */
-  async function init() {
-    // 両シートを並列取得
-    const [todoData, watchData] = await Promise.all([
-      gasGet({ sheet: 'todos',   action: 'list' }),
-      gasGet({ sheet: 'watches', action: 'list' }),
-    ]);
-    todos   = Array.isArray(todoData)  ? todoData  : [];
-    watches = Array.isArray(watchData) ? watchData : [];
+  showLoading();
+  onValue(ref(db, 'todos'), snap => {
+    todos = fbToArray(snap);
     renderTodos();
-    renderWatches();
-  }
+    hideLoading();
+  });
 
-  init();
+  showLoading();
+  onValue(ref(db, 'watches'), snap => {
+    watches = fbToArray(snap);
+    renderWatches();
+    hideLoading();
+  });
+
+  showLoading();
+  onValue(ref(db, 'buckets'), snap => {
+    buckets = fbToArray(snap);
+    renderBuckets();
+    hideLoading();
+  });
 </script>
 
 </body>
